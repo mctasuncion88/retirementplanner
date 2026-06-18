@@ -4,9 +4,9 @@ A simple retirement and savings calculator. One page, no sign-up. Put in your nu
 
 ## How it works
 
-Sort your money into **buckets** — Emergency, Health, Travel, House, Retirement, or your own. Safety buckets are kept as cash and funded first; the rest are invested and grow over time. The tool works out the monthly saving that gets every bucket to its target by the year you retire.
+Input the assets (savings accounts, cash, investments, etc.) and liabilities (credit card bill, mortgage, loan, etc.) you have right now. Specify your target savings money into **buckets**: Emergency, Health, Travel, House, Retirement, or your own. Safety buckets are kept as cash and funded first; the rest are invested and grow over time. The tool works out the monthly saving that gets every bucket to its target by the year you retire.
 
-Your retirement number isn't guessed with a rule of thumb — your spending is adjusted for inflation and stretched across your whole retirement.
+The tool will then give you an actionable insight: how much shouldyou save each month.
 
 ## Don't just take its word for it
 
