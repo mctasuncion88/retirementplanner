@@ -2,8 +2,6 @@
 
 A simple retirement and savings calculator. One page, no sign-up. Put in your numbers, and it tells you the one thing you came for: **how much to save each month** to retire the way you want.
 
-**To use it:** open `bucket-planner.html` in any browser. That's it.
-
 ## How it works
 
 Sort your money into **buckets** — Emergency, Health, Travel, House, Retirement, or your own. Safety buckets are kept as cash and funded first; the rest are invested and grow over time. The tool works out the monthly saving that gets every bucket to its target by the year you retire.
