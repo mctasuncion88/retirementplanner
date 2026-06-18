@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bucket Plan — a savings & retirement planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;450;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F1EFE7; --surface:#FBFAF6; --surface-2:#F6F4EC;
+    --ink:#15302B; --ink-2:#3B514A; --muted:#7E8C85;
+    --line:#DAD6CA; --line-soft:#E6E2D7;
+    --teal:#1C7A6A; --teal-deep:#13564A; --teal-light:#43A491; --teal-pale:#D9EAE4;
+    --clay:#BE6A38; --clay-pale:#F1DECC;
+    --gold:#B08A2E;
+    --r:14px; --r-sm:9px;
+    --shadow:0 1px 2px rgba(21,48,43,.04), 0 8px 24px -16px rgba(21,48,43,.25);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Inter",system-ui,sans-serif; font-size:15px; line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .num{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; font-feature-settings:"tnum"}
+  h1,h2,h3{font-family:"Fraunces",Georgia,serif; font-weight:600; letter-spacing:-.01em; margin:0}
+  a{color:var(--teal-deep)}
+
+  /* ---------- header ---------- */
+  header{
+    padding:38px 28px 30px; max-width:1240px; margin:0 auto;
+  }
+  .eyebrow{font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--teal); font-weight:600; margin-bottom:12px}
+  header h1{font-size:clamp(30px,4.4vw,46px); line-height:1.02; max-width:16ch}
+  header h1 em{font-style:italic; color:var(--teal-deep)}
+  header p{max-width:60ch; color:var(--ink-2); margin:16px 0 0; font-size:15.5px}
+
+  /* ---------- layout ---------- */
+  .wrap{max-width:1240px; margin:0 auto; padding:0 28px 80px;
+    display:grid; grid-template-columns:minmax(0,1fr) 426px; gap:30px; align-items:start}
+  @media(max-width:980px){ .wrap{grid-template-columns:1fr; gap:22px} }
+
+  /* ---------- input column ---------- */
+  .stack{display:flex; flex-direction:column; gap:18px}
+  .panel{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--r);
+    box-shadow:var(--shadow); overflow:hidden;
+  }
+  .panel-head{display:flex; align-items:baseline; gap:14px; padding:20px 22px 0}
+  .step{font-family:"IBM Plex Mono",monospace; font-size:12px; font-weight:600; color:var(--teal);
+    border:1px solid var(--teal-pale); background:var(--teal-pale); color:var(--teal-deep);
+    width:26px; height:26px; border-radius:7px; display:grid; place-items:center; flex:none; transform:translateY(-2px)}
+  .panel-head h2{font-size:20px}
+  .panel-head .sub{display:block; font-family:"Inter",sans-serif; font-weight:400; font-size:13px; color:var(--muted); margin-top:3px}
+  .panel-body{padding:16px 22px 22px}
+
+  /* fields */
+  .field{padding:14px 0; border-top:1px solid var(--line-soft)}
+  .field:first-child{border-top:none; padding-top:6px}
+  .field-top{display:flex; justify-content:space-between; align-items:baseline; gap:12px}
+  .field label{font-weight:500; font-size:14.5px}
+  .hint{font-size:12.5px; color:var(--muted); margin:3px 0 9px; max-width:62ch}
+  .in-money{position:relative; display:flex; align-items:center}
+  .in-money .cur{position:absolute; left:13px; font-size:12.5px; color:var(--muted); font-family:"IBM Plex Mono",monospace; pointer-events:none}
+  input[type=text],input[type=number]{
+    width:100%; font:inherit; padding:10px 13px; border:1px solid var(--line); border-radius:var(--r-sm);
+    background:var(--surface-2); color:var(--ink); transition:border-color .15s, background .15s;
+  }
+  .in-money input{padding-left:42px; font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums}
+  input:focus{outline:none; border-color:var(--teal); background:#fff; box-shadow:0 0 0 3px rgba(28,122,106,.12)}
+  input::placeholder{color:#B7BDB7}
+  .note-in{margin-top:8px}
+  .note-in input{font-size:13px; padding:8px 12px; font-family:"Inter",sans-serif}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+  .row3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px}
+  @media(max-width:430px){ .row2,.row3{grid-template-columns:1fr} }
+  .mini label{font-size:13px; color:var(--ink-2); display:block; margin-bottom:6px; font-weight:500}
+  .suffixed{position:relative}
+  .suffixed .sfx{position:absolute; right:12px; top:50%; transform:translateY(-50%); font-size:12px; color:var(--muted); font-family:"IBM Plex Mono",monospace}
+  .suffixed input{padding-right:30px; font-family:"IBM Plex Mono",monospace}
+
+  /* bucket rows */
+  .bucket-row{border:1px solid var(--line); border-radius:var(--r-sm); padding:13px 14px; margin-top:11px; background:var(--surface-2)}
+  .bucket-row.locked{background:linear-gradient(180deg,#fff, var(--surface-2))}
+  .br-top{display:flex; align-items:center; gap:10px}
+  .pri{font-family:"IBM Plex Mono",monospace; font-size:12px; font-weight:600; color:var(--teal-deep);
+    background:var(--teal-pale); border-radius:6px; min-width:24px; height:24px; padding:0 5px; display:grid; place-items:center; flex:none}
+  .br-name{flex:1; font-weight:600; font-size:14.5px}
+  .br-name input{font-weight:600}
+  .tag{font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--teal-deep); font-weight:600;
+    background:var(--teal-pale); padding:3px 7px; border-radius:5px; flex:none}
+  .tag.calc{color:var(--clay); background:var(--clay-pale)}
+  .br-del{flex:none; border:none; background:none; color:var(--muted); cursor:pointer; font-size:18px; line-height:1; padding:4px; border-radius:6px}
+  .br-del:hover{color:var(--clay); background:var(--clay-pale)}
+  .mand-toggle{flex:none; font:inherit; font-size:11px; font-weight:600; letter-spacing:.02em; cursor:pointer;
+    padding:4px 9px; border-radius:6px; border:1px solid var(--line); background:var(--surface); color:var(--muted); transition:.15s; white-space:nowrap}
+  .mand-toggle:hover{border-color:var(--teal); color:var(--teal-deep)}
+  .mand-toggle.on{background:var(--teal-pale); border-color:var(--teal-light); color:var(--teal-deep)}
+  .br-grid{display:grid; grid-template-columns:130px 1fr; gap:10px; margin-top:11px; align-items:center}
+  .br-grid .lbl{font-size:12.5px; color:var(--muted)}
+  .br-target-display{font-family:"IBM Plex Mono",monospace; font-weight:600; color:var(--teal-deep); font-size:15px}
+  .pri-controls{display:flex; gap:3px; flex:none}
+  .pri-controls button{border:1px solid var(--line); background:var(--surface); width:24px; height:22px; border-radius:5px; cursor:pointer; color:var(--ink-2); font-size:11px; line-height:1; padding:0}
+  .pri-controls button:hover:not(:disabled){border-color:var(--teal); color:var(--teal)}
+  .pri-controls button:disabled{opacity:.3; cursor:default}
+  .add-btn{margin-top:14px; width:100%; padding:11px; border:1.5px dashed var(--line); border-radius:var(--r-sm);
+    background:none; color:var(--ink-2); font:inherit; font-weight:500; cursor:pointer; transition:.15s}
+  .add-btn:hover{border-color:var(--teal); color:var(--teal-deep); background:var(--teal-pale)}
+
+  /* allocation */
+  .alloc-row{display:flex; align-items:center; gap:13px; padding:11px 0; border-top:1px solid var(--line-soft)}
+  .alloc-row:first-child{border-top:none}
+  .alloc-name{flex:1; font-weight:500; font-size:14px}
+  .alloc-name small{display:block; color:var(--muted); font-size:12px; font-weight:400}
+  .alloc-in{width:78px; flex:none}
+  .alloc-in .suffixed input{text-align:right; font-weight:600}
+  .alloc-sum{display:flex; justify-content:space-between; align-items:center; margin-top:14px; padding:12px 14px; border-radius:var(--r-sm);
+    background:var(--teal-pale); font-size:13.5px}
+  .alloc-sum.bad{background:var(--clay-pale); color:var(--clay)}
+  .alloc-sum .v{font-family:"IBM Plex Mono",monospace; font-weight:600}
+
+  /* retirement breakdown */
+  .calc-out{margin-top:6px; background:var(--surface-2); border:1px solid var(--line-soft); border-radius:var(--r-sm); padding:14px 16px}
+  .calc-line{display:flex; justify-content:space-between; font-size:13px; padding:5px 0; color:var(--ink-2)}
+  .calc-line .num{color:var(--ink)}
+  .calc-line.total{border-top:1px solid var(--line); margin-top:6px; padding-top:10px; font-weight:600; color:var(--ink); font-size:14.5px}
+  .calc-line.total .num{color:var(--teal-deep)}
+  .calc-note{margin-top:11px; padding-top:11px; border-top:1px solid var(--line-soft); font-size:12px; color:var(--muted); line-height:1.5}
+  .calc-note strong{color:var(--ink-2)}
+  .calc-head{font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--teal); font-weight:600; margin:12px 0 2px}
+  .calc-head:first-child{margin-top:0}
+  .calc-line.hl{font-weight:600; color:var(--ink)}
+  .calc-line.hl .num{color:var(--teal-deep)}
+  .calc-sub{font-weight:400; color:var(--muted); font-size:11.5px}
+  .calc-line.ref{color:var(--muted)}
+  .calc-line.ref .num{color:var(--muted); font-weight:500}
+
+  /* ---------- results pane ---------- */
+  .results{position:sticky; top:18px; display:flex; flex-direction:column; gap:16px}
+  @media(max-width:980px){ .results{position:static} }
+  .result-card{background:var(--ink); color:#EAF1EE; border-radius:var(--r); padding:24px 24px 26px; box-shadow:var(--shadow)}
+  .result-card .rc-label{font-size:12px; letter-spacing:.13em; text-transform:uppercase; color:var(--teal-light); font-weight:600}
+  .headline-num{font-family:"IBM Plex Mono",monospace; font-weight:600; font-size:clamp(30px,4vw,40px); letter-spacing:-.02em; margin:8px 0 2px; line-height:1}
+  .headline-sub{font-size:13px; color:#A9BDB6}
+  .headline-note{font-size:12.5px; color:#8FA59E; margin-top:14px; padding-top:14px; border-top:1px solid rgba(255,255,255,.1); line-height:1.45}
+  .headline-note strong{color:#CFE0DA}
+  .headline-note .worst{display:block; margin-top:8px; font-size:11.5px; color:#7C928B; font-style:italic}
+  .nw-strip{display:flex; gap:0; background:var(--surface); border:1px solid var(--line); border-radius:var(--r); overflow:hidden}
+  .nw-cell{flex:1; padding:13px 14px; border-left:1px solid var(--line-soft)}
+  .nw-cell:first-child{border-left:none}
+  .nw-cell .k{font-size:11px; color:var(--muted); letter-spacing:.04em; text-transform:uppercase}
+  .nw-cell .v{font-family:"IBM Plex Mono",monospace; font-weight:600; font-size:16px; margin-top:3px}
+  .nw-cell.net .v{color:var(--teal-deep)}
+
+  .buckets-out{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:8px 18px 18px; box-shadow:var(--shadow)}
+  .buckets-out .bo-head{font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); font-weight:600; padding:14px 0 4px}
+  .vessel-row{display:flex; gap:15px; align-items:center; padding:14px 0; border-top:1px solid var(--line-soft)}
+  .vessel{width:46px; height:62px; flex:none; position:relative; border:2px solid var(--teal); border-top:none;
+    border-radius:5px 5px 11px 11px; background:var(--teal-pale); overflow:hidden}
+  .vessel .water{position:absolute; left:0; right:0; bottom:0; height:0%; background:linear-gradient(180deg,var(--teal-light),var(--teal));
+    transition:height .7s cubic-bezier(.4,0,.2,1)}
+  .vessel .water::before{content:""; position:absolute; top:-3px; left:0; right:0; height:5px; border-radius:50%;
+    background:var(--teal-light); opacity:.65}
+  .vessel.over{border-color:var(--clay)}
+  .vessel.over .water{background:linear-gradient(180deg,var(--clay),#A85A2E)}
+  .vessel.over .water::before{background:var(--clay)}
+  .vessel.empty{border-color:var(--line); background:var(--surface-2)}
+  .v-info{flex:1; min-width:0}
+  .v-name{font-weight:600; font-size:14px; display:flex; align-items:center; gap:8px}
+  .v-name .chip{font-size:10px; letter-spacing:.04em; text-transform:uppercase; font-weight:600; padding:2px 6px; border-radius:5px}
+  .chip.funded{color:var(--teal-deep); background:var(--teal-pale)}
+  .chip.building{color:var(--gold); background:#F3EAD2}
+  .chip.empty{color:var(--muted); background:var(--surface-2)}
+  .chip.over{color:var(--clay); background:var(--clay-pale)}
+  .v-figs{font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--ink-2); margin-top:4px}
+  .v-figs b{color:var(--ink); font-weight:600}
+  .v-src{font-size:12px; color:var(--muted); margin-top:3px}
+  .v-src .dot{display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:5px; vertical-align:middle}
+  .v-time{font-weight:600; color:var(--teal-deep)}
+  .v-time.done{color:var(--muted); font-weight:500}
+  .v-time.none{color:var(--clay); font-weight:500}
+  .v-retnote{font-size:11.5px; color:var(--clay); background:var(--clay-pale); border-radius:6px; padding:6px 9px; margin-top:7px; line-height:1.45}
+  .v-retnote strong{color:#9a4f24}
+  .info-callout{font-size:13px; line-height:1.55; color:var(--ink-2); background:var(--teal-pale); border:1px solid var(--teal-light);
+    border-radius:var(--r-sm); padding:13px 15px; margin-bottom:4px}
+  .info-callout strong{color:var(--teal-deep)}
+  .page-footer{max-width:1240px; margin:0 auto; padding:8px 28px 48px; text-align:center; font-size:13px; color:var(--muted)}
+  .page-footer a{color:var(--teal-deep); font-weight:500; text-decoration:none; border-bottom:1px solid var(--teal-light)}
+  .page-footer a:hover{color:var(--teal)}
+  .dot.cash{background:var(--teal-light)} .dot.inv{background:var(--teal-deep)} .dot.both{background:linear-gradient(90deg,var(--teal-light) 50%,var(--teal-deep) 50%)} .dot.none{background:var(--line)}
+
+  .footnote{font-size:12px; color:var(--muted); line-height:1.5; padding:2px 4px}
+  .footnote a{color:var(--teal-deep)}
+  .verify{max-width:1180px; margin:34px auto 0; padding:26px 30px; background:var(--card); border:1px solid var(--line); border-radius:18px}
+  .verify-head{font-family:"Fraunces",Georgia,serif; font-size:22px; color:var(--ink); margin-bottom:8px}
+  .verify-intro{font-size:14px; color:var(--muted); line-height:1.6; margin:0 0 16px; max-width:760px}
+  .verify-box{position:relative}
+  .verify-copy{position:absolute; top:12px; right:12px; z-index:2; font-family:"Inter",sans-serif; font-size:12px; font-weight:600;
+    letter-spacing:.02em; color:#fff; background:var(--teal); border:none; border-radius:9px; padding:8px 14px; cursor:pointer; transition:background .15s}
+  .verify-copy:hover{background:var(--teal-deep)}
+  .verify-copy.done{background:var(--clay)}
+  .verify-text{width:100%; min-height:260px; box-sizing:border-box; resize:vertical; padding:18px 18px 18px;
+    font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.6; color:var(--ink);
+    background:var(--paper); border:1px solid var(--line); border-radius:12px; white-space:pre-wrap}
+  .verify-text:focus{outline:2px solid var(--teal); outline-offset:1px}
+  .warn-inline{font-size:12.5px; color:var(--clay); margin-top:8px; display:none}
+  .warn-inline.show{display:block}
+
+  /* currency + reset bar */
+  .toolbar{display:flex; align-items:center; gap:12px; max-width:1240px; margin:0 auto; padding:0 28px 4px}
+  .toolbar .sp{flex:1}
+  .cur-sel{display:flex; align-items:center; gap:7px; font-size:13px; color:var(--ink-2)}
+  select{font:inherit; font-size:13px; padding:7px 10px; border:1px solid var(--line); border-radius:var(--r-sm); background:var(--surface); color:var(--ink)}
+  .ghost{border:1px solid var(--line); background:var(--surface); color:var(--ink-2); font:inherit; font-size:13px; padding:7px 13px; border-radius:var(--r-sm); cursor:pointer}
+  .ghost:hover{border-color:var(--teal); color:var(--teal-deep)}
+
+  @media(prefers-reduced-motion:reduce){ .vessel .water{transition:none} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Retirement calculator</div>
+  <h1>How much should I save each month <em>to retire the way I want?</em></h1>
+  <p>This calculator was built for simplicity. Put in what you have today and the life you want in retirement, and it works out the one figure that matters: the amount to save each month until you retire. Map your goals into buckets — a safety net, a home, travel, retirement — and find your magic monthly number.</p>
+</header>
+
+<div class="toolbar">
+  <div class="cur-sel">
+    <span>Currency</span>
+    <select id="currency">
+      <option value="SGD">SGD — S$</option>
+      <option value="PHP">PHP — ₱</option>
+      <option value="USD">USD — $</option>
+      <option value="EUR">EUR — €</option>
+      <option value="GBP">GBP — £</option>
+      <option value="MYR">MYR — RM</option>
+      <option value="AUD">AUD — A$</option>
+    </select>
+  </div>
+  <div class="sp"></div>
+  <button class="ghost" id="resetBtn">Reset to example</button>
+</div>
+
+<div class="wrap">
+  <!-- ============ INPUTS ============ -->
+  <div class="stack">
+
+    <!-- STEP 1 -->
+    <section class="panel">
+      <div class="panel-head"><span class="step">1</span>
+        <h2>Your money today<span class="sub">What you have, what you owe, and how your investments grow. Round numbers are fine.</span></h2>
+      </div>
+      <div class="panel-body">
+        <div class="field">
+          <div class="field-top"><label for="cash">Liquid cash</label></div>
+          <div class="hint">Money you could spend today — add up your everyday and savings account balances.</div>
+          <div class="in-money"><span class="cur" data-cur>S$</span><input type="text" id="cash" inputmode="decimal"></div>
+        </div>
+
+        <div class="field">
+          <div class="field-top"><label for="inv">Investments</label></div>
+          <div class="hint">Today's market value of stocks, funds, bonds, crypto, any tax-advantaged or pension accounts you'd count toward these goals, and any property equity. Use current value, not what you paid.</div>
+          <div class="in-money"><span class="cur" data-cur>S$</span><input type="text" id="inv" inputmode="decimal"></div>
+        </div>
+
+        <div class="field">
+          <div class="field-top"><label for="ret">Estimated annual investment return</label></div>
+          <div class="hint">Your best guess at average yearly growth, after fees. A diversified stock-and-bond mix is often estimated near 5–7%. Be realistic, not hopeful — this also sizes your retirement target.</div>
+          <div class="suffixed" style="max-width:160px"><input type="number" id="ret" step="0.1" inputmode="decimal"><span class="sfx">% / yr</span></div>
+        </div>
+
+        <div class="field">
+          <div class="field-top"><label for="infl">Expected inflation</label></div>
+          <div class="hint">How fast prices rise where you'll spend in retirement. A long-run figure of 2–4% a year is typical for many countries; use what fits yours. This is what your retirement money has to keep up with.</div>
+          <div class="suffixed" style="max-width:160px"><input type="number" id="infl" step="0.1" inputmode="decimal"><span class="sfx">% / yr</span></div>
+        </div>
+
+        <div class="field">
+          <div class="field-top"><label for="liab">Liabilities</label></div>
+          <div class="hint">Total debt you'd want cleared — card balances, personal or car loans, remaining mortgage. The balance you owe, not the monthly payment. Paid from cash first.</div>
+          <div class="in-money"><span class="cur" data-cur>S$</span><input type="text" id="liab" inputmode="decimal"></div>
+        </div>
+
+        <div class="field">
+          <div class="hint" style="margin-bottom:11px"><strong style="color:var(--ink)">Your timeline.</strong> Used to size your retirement pot and to spread your saving across the months you have left.</div>
+          <div class="row3">
+            <div class="mini"><label for="ageNow">Age now</label><div class="suffixed"><input type="number" id="ageNow" placeholder="e.g. 51"></div></div>
+            <div class="mini"><label for="ageRet">Retire at</label><div class="suffixed"><input type="number" id="ageRet"></div></div>
+            <div class="mini"><label for="ageEnd">Plan until</label><div class="suffixed"><input type="number" id="ageEnd"></div></div>
+          </div>
+          <div class="hint" id="ageNote" style="margin-top:9px"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 3 (retirement details placed before buckets logically; numbered 2 for the engine) -->
+    <section class="panel">
+      <div class="panel-head"><span class="step">2</span>
+        <h2>Your retirement target<span class="sub">Tell it the life you want; it works out the pot you need. No 4% rule — a real spend-down.</span></h2>
+      </div>
+      <div class="panel-body">
+        <div class="field">
+          <div class="field-top"><label for="monthly">Desired monthly spending in retirement</label></div>
+          <div class="hint">In <strong>today's money</strong> — what that lifestyle would cost right now (home, food, utilities, healthcare, leisure). You don't inflate it; the tool handles rising prices through the real return.</div>
+          <div class="in-money"><span class="cur" data-cur>S$</span><input type="text" id="monthly" inputmode="decimal"></div>
+        </div>
+        <div class="field">
+          <div class="field-top"><label for="retRet">Investment return <em style="font-style:normal;color:var(--muted)">during</em> retirement</label><span style="font-size:12px;color:var(--muted)">optional</span></div>
+          <div class="hint">Most people move to safer, lower-yielding investments once they retire. Put that lower rate here and the pot is sized for it. <strong>Leave blank</strong> to assume your return stays the same as before retirement.</div>
+          <div class="suffixed" style="max-width:200px"><input type="number" id="retRet" step="0.1" inputmode="decimal" placeholder="same as before"><span class="sfx">% / yr</span></div>
+        </div>
+        <div class="field">
+          <div class="field-top"><label for="buffer">Amount to leave behind</label></div>
+          <div class="hint">The <strong>actual lump sum, in today's money</strong>, you want still sitting in the pot at the end — an inheritance or a cushion in case you outlive the plan. Leave at 0 to spend the pot all the way down to zero by your "plan until" age.</div>
+          <div class="in-money"><span class="cur" data-cur>S$</span><input type="text" id="buffer" inputmode="decimal"></div>
+        </div>
+        <div class="calc-out" id="retBreakdown"></div>
+      </div>
+    </section>
+
+    <!-- STEP 2 buckets -->
+    <section class="panel">
+      <div class="panel-head"><span class="step">3</span>
+        <h2>Your buckets<span class="sub">Emergency and Health always fill first. Mark any other bucket "Fill first" to top it up fully before the rest — handy for short-term goals. Rank and add as you like.</span></h2>
+      </div>
+      <div class="panel-body">
+        <div class="info-callout">Enter each target as the <strong>exact amount you want</strong>, in today's money. We take these at face value — <strong>except the Retirement fund</strong>, which we adjust for inflation and show as the (larger) amount you'll actually need on the day you retire. That one goal is decades of spending, so today's prices won't cut it.</div>
+        <div id="bucketList"></div>
+        <button class="add-btn" id="addBucket">+ Add a bucket</button>
+      </div>
+    </section>
+
+    <!-- STEP 4 allocation -->
+    <section class="panel">
+      <div class="panel-head"><span class="step">4</span>
+        <h2>How to split your saving<span class="sub">These percentages decide how each month's saving is divided across the non-mandatory buckets. As a bucket fills up, its share is re-divided among the rest in the same proportions. Must total 100%.</span></h2>
+      </div>
+      <div class="panel-body">
+        <div id="allocList"></div>
+        <div class="alloc-sum" id="allocSum"><span>Total allocation</span><span class="v" id="allocTotal">100%</span></div>
+        <div class="warn-inline" id="allocWarn">Adjust the splits so they add up to exactly 100%.</div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============ RESULTS ============ -->
+  <div class="results">
+    <div class="result-card">
+      <div class="rc-label">Set aside each month until you retire</div>
+      <div class="headline-num" id="monthlySave">—</div>
+      <div class="headline-sub" id="monthlySaveSub"></div>
+      <div class="headline-note" id="monthlySaveNote"></div>
+    </div>
+
+    <div class="nw-strip">
+      <div class="nw-cell"><div class="k">Cash</div><div class="v num" id="nwCash">—</div></div>
+      <div class="nw-cell"><div class="k">Investments</div><div class="v num" id="nwInv">—</div></div>
+      <div class="nw-cell"><div class="k">− Debt</div><div class="v num" id="nwLiab">—</div></div>
+      <div class="nw-cell net"><div class="k">Net to deploy</div><div class="v num" id="nwNet">—</div></div>
+    </div>
+
+    <div class="buckets-out">
+      <div class="bo-head">Where your money lands now</div>
+      <div id="vesselList"></div>
+    </div>
+
+    <div class="footnote">
+      Emergency and Health are kept as cash and filled first; any bucket you mark "Fill first" joins them and, once full, simply sits there — cash doesn't grow. Every other bucket is invested. While it fills, it takes its share of your monthly saving; as a bucket reaches its target, that share is re-divided among the buckets still being filled, keeping their original proportions. Here's the key part: once an <em>invested</em> bucket (like Travel or House) is full, it keeps growing, and everything it earns above its target spills into your Retirement fund — so a filled House quietly helps pay for retirement instead of sitting idle. Every target is the plain amount you entered, except Retirement, which is shown as its inflation-adjusted future value.
+    </div>
+  </div>
+</div>
+
+<section class="verify">
+  <div class="verify-head">Check this against another AI</div>
+  <p class="verify-intro">Don't take this tool's word for it. Copy the prompt below — it's filled in with your exact numbers and the full method — paste it into any other AI (ChatGPT, Gemini, another Claude), and compare its answer to what you see above. They should land within a rounding nudge of each other.</p>
+  <div class="verify-box">
+    <button class="verify-copy" id="copyPromptBtn" type="button">Copy prompt</button>
+    <textarea id="verifyPrompt" class="verify-text" readonly spellcheck="false"></textarea>
+  </div>
+</section>
+
+<footer class="page-footer">
+  Ideated by <a href="https://github.com/mctasuncion88" target="_blank" rel="noopener">Christine</a> and developed by Claude.
+</footer>
+
+<script>
+"use strict";
+const CUR = {SGD:"S$",PHP:"₱",USD:"$",EUR:"€",GBP:"£",MYR:"RM",AUD:"A$"};
+let curCode = "SGD";
+
+/* ---------- state ---------- */
+let buckets = [];
+let uid = 0;
+function defaults(){
+  uid = 0;
+  buckets = [
+    {id:++uid, name:"Emergency Fund", target:15000, note:"", core:true,  mandatory:true,  removable:false, isRet:false, priority:1, pct:0},
+    {id:++uid, name:"Health Fund",    target:5000,  note:"", core:true,  mandatory:true,  removable:false, isRet:false, priority:2, pct:0},
+    {id:++uid, name:"Travel Fund",    target:5000,  note:"", core:false, mandatory:false, removable:true,  isRet:false, priority:3, pct:20},
+    {id:++uid, name:"House Fund",     target:30000, note:"", core:false, mandatory:false, removable:true,  isRet:false, priority:4, pct:30},
+    {id:++uid, name:"Retirement Fund",target:0,     note:"", core:true,  mandatory:false, removable:false, isRet:true,  priority:5, pct:50},
+  ];
+}
+const F = { cash:18000, inv:12000, ret:6, infl:3, liab:5000, ageNow:25, ageRet:65, ageEnd:90, monthly:2500, retRet:"", buffer:0 };
+
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+const sym = () => CUR[curCode];
+function money(n){
+  if(!isFinite(n)) return "—";
+  const r = Math.round(n);
+  return sym() + r.toLocaleString("en-US");
+}
+function moneyK(n){ // compact for tight spots
+  if(!isFinite(n)) return "—";
+  return sym() + Math.round(n).toLocaleString("en-US");
+}
+function parseNum(v){
+  if(v==null) return 0;
+  const n = parseFloat(String(v).replace(/[^0-9.\-]/g,""));
+  return isFinite(n)?n:0;
+}
+function num(id){ return parseNum($(id).value); }
+
+/* ---------- retirement corpus (real-return annuity + discounted legacy buffer) ---------- */
+function computeCorpus(){
+  const monthly = parseNum($("monthly").value);
+  const buffer  = parseNum($("buffer").value);
+  const accRet = num("ret")/100;                       // return before retirement
+  const rawRetRet = $("retRet").value.trim();          // optional return during retirement
+  const usedRet = rawRetRet==="" ? accRet : parseNum(rawRetRet)/100;
+  const infl = num("infl")/100;
+  const N = Math.max(0, (num("ageEnd") - num("ageRet")));
+  const yearsToRet = Math.max(0, (num("ageRet") - num("ageNow")));
+  const annual = monthly*12;
+  const rr = (1+usedRet)/(1+infl) - 1;                 // real return DURING retirement
+  let factor;
+  if(Math.abs(rr) < 1e-9){ factor = N; }
+  else { factor = (1 - Math.pow(1+rr,-N))/rr; }
+  const spendPV = annual*factor;
+  // inflation-adjusted views (what you'll actually face at retirement age)
+  const inflFactor = Math.pow(1+infl, yearsToRet);
+  const monthlyAtRet = monthly * inflFactor;                 // first-year-of-retirement spend, in future money
+  const nominalSpend = spendPV * inflFactor;                 // spending pot at retirement (future value)
+  // legacy buffer is a FLAT amount at death — discount it back to the retirement date at the nominal retirement return
+  const nominalBuffer = buffer / Math.pow(1+usedRet, N);
+  const nominalCorpus = nominalSpend + nominalBuffer;        // total pot needed at retirement (future value)
+  const corpus = inflFactor>0 ? nominalCorpus / inflFactor : nominalCorpus;  // today's-money equivalent of the whole pot
+  const bufferPV = inflFactor>0 ? nominalBuffer / inflFactor : nominalBuffer;
+  return {corpus, spendPV, bufferPV, nominalSpend, nominalBuffer, N, rr, factor, annual, monthly, buffer,
+          usedRet, accRet, overrideRet: rawRetRet!=="", infl, yearsToRet, monthlyAtRet, nominalCorpus, inflFactor };
+}
+
+/* ---------- proportional water-filling ----------
+   Distributes `pot` across items by their pct. When a bucket hits its cap, its share
+   is re-divided among the remaining buckets in their original proportions. cap may be Infinity. */
+function waterFill(pot, items){
+  const out = {}; items.forEach(it=> out[it.id]=0);
+  let active = items.filter(it=> it.pct>0 && it.cap>1e-9);
+  let rem = Math.max(0, pot), guard = 0;
+  while(rem>1e-9 && active.length>0 && guard++<2000){
+    const tp = active.reduce((s,it)=>s+it.pct,0);
+    if(tp<=0) break;
+    let minPot = rem, bind = false;
+    for(const it of active){
+      if(it.cap===Infinity) continue;
+      const need = it.cap - out[it.id];
+      const p = need * tp / it.pct;
+      if(p < minPot){ minPot = p; bind = true; }
+    }
+    for(const it of active) out[it.id] += minPot * it.pct / tp;
+    rem -= minPot;
+    active = active.filter(it=> it.cap===Infinity || (it.cap - out[it.id]) > 1e-6);
+    if(!bind) break;
+  }
+  return { out, leftover: Math.max(0, rem) };
+}
+
+/* ---------- fill timeline (front-loaded) ----------
+   Cash buckets (mandatory) are filled first, in priority order, from the monthly saving (no growth).
+   Then the investment buckets fill proportionally while their balances grow at monthly rate `i`;
+   when one reaches its target its share is re-divided among the rest. Returns months-to-fill per id. */
+function fillTimes(M, i, cashB, invB){
+  const times = {};
+  if(M<=1e-9) return null;
+  let t = 0;
+  for(const b of cashB){
+    const need = Math.max(0, b.target - b.bal);
+    if(need<=1e-6){ times[b.id]=0; continue; }
+    t += need/M; times[b.id] = t;
+  }
+  const bal = {}; invB.forEach(b=> bal[b.id]=b.bal);
+  const retB = invB.find(b=>b.isRet);
+  const retId = retB ? retB.id : null;
+  let active = invB.filter(b=> b.pct>0 && (b.target-bal[b.id])>1e-6);
+  invB.forEach(b=>{ if((b.target-bal[b.id])<=1e-6) times[b.id]=0; });
+  invB.forEach(b=>{ if(b.pct<=0 && (b.target-bal[b.id])>1e-6) times[b.id]=Infinity; });
+  let m = Math.ceil(t), guard = 0;
+  while(active.length>0 && guard++<2400){
+    m++;
+    // every invested bucket grows (including ones already at their target)
+    invB.forEach(b=> bal[b.id] *= (1+i));
+    // a filled NON-retirement investment bucket keeps only its target; its growth spills into retirement
+    if(retId){
+      invB.forEach(b=>{
+        if(!b.isRet && times[b.id]!==undefined && times[b.id]!==Infinity && bal[b.id] > b.target){
+          bal[retId] += bal[b.id] - b.target;
+          bal[b.id] = b.target;
+        }
+      });
+    }
+    // monthly saving flows to the buckets still being filled, by their proportions
+    const tp = active.reduce((s,b)=>s+b.pct,0);
+    if(tp>0 && M>0) active.forEach(b=> bal[b.id] += M*b.pct/tp);
+    active.filter(b=> bal[b.id] >= b.target-1e-6).forEach(b=> times[b.id]=m);
+    active = active.filter(b=> bal[b.id] < b.target-1e-6);
+  }
+  invB.forEach(b=>{ if(times[b.id]===undefined) times[b.id]=Infinity; });
+  return times;
+}
+/* the monthly saving that gets every funded bucket to its target by `n` months, via fillTimes */
+function requiredMonthly(n, i, cashB, invB){
+  const finiteMax = (M)=>{ const tt=fillTimes(M,i,cashB,invB); if(!tt) return Infinity;
+    const vals=Object.values(tt).filter(isFinite); return vals.length?Math.max(...vals):0; };
+  // if nothing needs funding, zero
+  const anyNeed = cashB.some(b=>b.target-b.bal>1e-6) || invB.some(b=>b.pct>0 && b.target-b.bal>1e-6);
+  if(!anyNeed) return 0;
+  let lo=0, hi=1e6;
+  for(let k=0;k<64;k++){ const mid=(lo+hi)/2; if(finiteMax(mid)>n) lo=mid; else hi=mid; }
+  return hi;
+}
+
+/* ---------- the engine ---------- */
+function compute(){
+  const cash = num("cash"), inv = num("inv"), liab = num("liab");
+  const net = cash + inv - liab;
+  const cashHave = Math.max(0, cash - liab);   // how much of the safety buckets can sit in actual cash today
+
+  const c = computeCorpus();
+  const retB = buckets.find(b=>b.isRet);
+  if(retB) retB.target = c.nominalCorpus;   // retirement bucket shown & funded as its FUTURE (age-retirement) value
+
+  const mand = buckets.filter(b=>b.mandatory && !b.isRet).sort((a,b)=>a.priority-b.priority); // safety (cash) buckets
+  const nonMand = buckets.filter(b=>!b.mandatory).sort((a,b)=>a.priority-b.priority);          // investment buckets
+
+  const alloc = {};
+  // 1) safety buckets fill first from everything you have, in priority order (cash first, then investments if needed)
+  let pot = net;
+  for(const b of mand){ const give = Math.max(0, Math.min(b.target, pot)); alloc[b.id]=give; pot-=give; }
+  const rem = Math.max(0, pot);
+
+  // 2) investment buckets fill from the remainder by proportional water-filling
+  const poolItems = nonMand.map(b=> ({ id:b.id, pct:b.pct, cap: b.isRet ? Infinity : b.target }));
+  const wf = waterFill(rem, poolItems);
+  nonMand.forEach(b=> alloc[b.id] = wf.out[b.id] || 0);
+  if(retB && wf.leftover > 0) alloc[retB.id] = (alloc[retB.id]||0) + wf.leftover;
+
+  // source label: cash buckets are cash, investment buckets are invested
+  const source = {};
+  buckets.forEach(b=>{ source[b.id] = (alloc[b.id]||0) <= 0 ? "none" : (b.mandatory ? "cash" : "inv"); });
+
+  // totals + shortfalls
+  const totalTarget = buckets.reduce((s,b)=>s + Math.max(0,b.target), 0);
+  const totalShortfall = Math.max(0, totalTarget - net);
+  const monthsToRet = Math.max(0, (num("ageRet") - num("ageNow"))) * 12;
+  const shortfall = {};
+  buckets.forEach(b=> shortfall[b.id] = Math.max(0, b.target - (alloc[b.id]||0)));
+
+  // savings plan: investments grow at the nominal return; cash buckets earn nothing.
+  // Targets are nominal (face value for near-term buckets; future value for retirement), so growth is nominal too.
+  const iMonthly = Math.pow(1 + c.accRet, 1/12) - 1;
+  const cashB = mand.map(b=> ({ id:b.id, bal: alloc[b.id]||0, target: b.target }));
+  const invB  = nonMand.map(b=> ({ id:b.id, pct:b.pct, bal: alloc[b.id]||0, target: b.target, isRet: !!b.isRet }));
+
+  let savings = null, times = null;
+  if(monthsToRet > 0){
+    const growthM = requiredMonthly(monthsToRet, iMonthly, cashB, invB);     // invested savings grow
+    const conservativeM = totalShortfall / monthsToRet;                       // nothing grows
+    const cashShortfall = mand.reduce((s,b)=> s + shortfall[b.id], 0);
+    times = fillTimes(growthM, iMonthly, cashB, invB);
+    savings = { growthM, conservativeM, cashShortfall, growthRate: c.accRet };
+  }
+
+  return {cash, inv, liab, net, cashHave, alloc, source, shortfall, times, savings, c,
+          totalTarget, totalShortfall, monthsToRet, order:[...mand,...nonMand]};
+}
+
+/* ---------- render: bucket editor ---------- */
+function renderBuckets(){
+  const list = $("bucketList"); list.innerHTML = "";
+  const reorderable = buckets.filter(b=>!b.core).sort((a,b)=>a.priority-b.priority);
+  buckets.forEach(b=>{
+    const locked = b.core;                       // Emergency / Health / Retirement: fixed name & position
+    const rIdx = reorderable.findIndex(x=>x.id===b.id);
+    const isFirstMid = rIdx===0, isLastMid = rIdx===reorderable.length-1;
+    const row = document.createElement("div");
+    row.className = "bucket-row" + (locked ? " locked":"");
+    row.innerHTML = `
+      <div class="br-top">
+        <span class="pri num">${b.priority}</span>
+        ${locked
+          ? `<span class="br-name">${escapeHtml(b.name) || "Untitled bucket"}</span>`
+          : `<span class="br-name"><input type="text" data-f="name" value="${escapeHtml(b.name)}" placeholder="Name this bucket"></span>`}
+        ${(b.core && b.mandatory && !b.isRet) ? `<span class="tag">Fills first</span>` : ``}
+        ${b.isRet ? `<span class="tag calc">Auto</span>` : ``}
+        ${!b.core ? `<button class="mand-toggle ${b.mandatory?'on':''}" data-act="mand" title="Fill this bucket completely before splitting the rest">${b.mandatory?'✓ Fills first':'Fill first'}</button>` : ``}
+        ${!locked ? `<div class="pri-controls">
+            <button data-act="up" ${isFirstMid?"disabled":""} title="Higher priority">▲</button>
+            <button data-act="down" ${isLastMid?"disabled":""} title="Lower priority">▼</button></div>` : ``}
+        ${b.removable ? `<button class="br-del" data-act="del" title="Remove">×</button>` : ``}
+      </div>
+      <div class="br-grid">
+        <span class="lbl">Target amount</span>
+        ${b.isRet
+          ? `<span class="br-target-display" data-rettarget>—</span>`
+          : `<div class="in-money"><span class="cur" data-cur>${sym()}</span><input type="text" data-f="target" inputmode="decimal" value="${b.target?b.target.toLocaleString("en-US"):""}"></div>`}
+      </div>`;
+    // wire inputs
+    row.querySelectorAll("[data-f]").forEach(inp=>{
+      inp.addEventListener("input", ()=>{
+        const f = inp.dataset.f;
+        if(f==="target") b.target = parseNum(inp.value);
+        else b[f] = inp.value;
+        if(f==="name") renderAlloc();   // keep allocation labels + vessels in sync with the typed name
+        recompute(false);
+      });
+    });
+    row.querySelectorAll("[data-act]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const act = btn.dataset.act;
+        if(act==="del"){ buckets = buckets.filter(x=>x.id!==b.id); reflowPriorities(); renderBuckets(); renderAlloc(); recompute(); }
+        else if(act==="mand"){ b.mandatory = !b.mandatory; reflowPriorities(); renderBuckets(); renderAlloc(); recompute(); }
+        else if(act==="up"||act==="down"){ movePriority(b, act); renderBuckets(); renderAlloc(); recompute(); }
+      });
+    });
+    list.appendChild(row);
+  });
+  updateRetTargetDisplay();
+}
+
+function escapeHtml(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+function movePriority(b, dir){
+  // reorderable buckets only (everything except Emergency / Health / Retirement)
+  const nm = buckets.filter(x=>!x.core).sort((a,c)=>a.priority-c.priority);
+  const i = nm.findIndex(x=>x.id===b.id);
+  const j = dir==="up"? i-1 : i+1;
+  if(j<0||j>=nm.length) return;
+  const tmp = nm[i].priority; nm[i].priority = nm[j].priority; nm[j].priority = tmp;
+}
+function reflowPriorities(){
+  const head = buckets.filter(b=>b.core && b.mandatory && !b.isRet).sort((a,b)=>a.priority-b.priority); // Emergency, Health
+  head.forEach((b,i)=> b.priority = i+1);
+  const mid = buckets.filter(b=>!b.core).sort((a,b)=>a.priority-b.priority);
+  mid.forEach((b,i)=> b.priority = head.length + 1 + i);
+  const ret = buckets.find(b=>b.isRet);
+  if(ret) ret.priority = head.length + mid.length + 1;
+}
+
+/* ---------- render: allocation ---------- */
+function renderAlloc(){
+  const list = $("allocList"); list.innerHTML = "";
+  const nm = buckets.filter(b=>!b.mandatory).sort((a,b)=>a.priority-b.priority);
+  nm.forEach(b=>{
+    const row = document.createElement("div");
+    row.className = "alloc-row";
+    row.innerHTML = `
+      <div class="alloc-name">${escapeHtml(b.name) || "Untitled bucket"}${b.isRet?` <small>absorbs anything that overflows the others</small>`:``}</div>
+      <div class="alloc-in"><div class="suffixed"><input type="number" data-id="${b.id}" value="${b.pct}" min="0" max="100"><span class="sfx">%</span></div></div>`;
+    row.querySelector("input").addEventListener("input", e=>{
+      b.pct = parseNum(e.target.value);
+      updateAllocSum(); recompute(false);
+    });
+    list.appendChild(row);
+  });
+  updateAllocSum();
+}
+function updateAllocSum(){
+  const nm = buckets.filter(b=>!b.mandatory);
+  const total = nm.reduce((s,b)=>s + (b.pct||0), 0);
+  const el = $("allocTotal"); el.textContent = (Math.round(total*10)/10) + "%";
+  const sum = $("allocSum"), warn = $("allocWarn");
+  const ok = Math.abs(total-100) < 0.05;
+  sum.classList.toggle("bad", !ok);
+  warn.classList.toggle("show", !ok);
+  return ok;
+}
+
+/* ---------- render: retirement breakdown ---------- */
+function updateRetTargetDisplay(){
+  const c = computeCorpus();
+  const el = document.querySelector("[data-rettarget]");
+  if(el) el.textContent = money(c.nominalCorpus);
+}
+function renderRetBreakdown(r){
+  const c = r.c;
+  const realPct = (c.rr*100);
+  const realTxt = (realPct>=0?"+":"") + realPct.toFixed(2) + "%";
+  const retRetPct = (c.usedRet*100).toFixed(1) + "%";
+  const inflPct = (c.infl*100);
+  $("retBreakdown").innerHTML = `
+    <div class="calc-head">What you'll actually spend</div>
+    <div class="calc-line"><span>Monthly spending, today's money</span><span class="num">${money(c.monthly)}</span></div>
+    <div class="calc-line hl"><span>Monthly spending at age ${num("ageRet")||"?"} <span class="calc-sub">(${c.yearsToRet} yrs × ${inflPct}% inflation)</span></span><span class="num">${money(c.monthlyAtRet)}</span></div>
+
+    <div class="calc-head">The pot that funds it</div>
+    <div class="calc-line"><span>Years it must last (${num("ageRet")||"?"}–${num("ageEnd")||"?"})</span><span class="num">${c.N} yrs</span></div>
+    <div class="calc-line"><span>Return during retirement${c.overrideRet?"":" (same as before)"}</span><span class="num">${retRetPct}</span></div>
+    <div class="calc-line"><span>Real return after ${inflPct}% inflation</span><span class="num">${realTxt}</span></div>
+    ${c.buffer>0?`<div class="calc-line"><span>Plus ${money(c.buffer)} left untouched at death <span class="calc-sub">(flat amount, set aside at ${num("ageRet")||"?"})</span></span><span class="num">${money(c.nominalBuffer)}</span></div>`:``}
+    <div class="calc-line total"><span>Pot needed at age ${num("ageRet")||"?"}</span><span class="num">${money(c.nominalCorpus)}</span></div>
+    <div class="calc-line ref"><span>That's ${money(c.corpus)} in today's money</span><span class="num"></span></div>
+    <div class="calc-note">Your spending keeps rising with inflation, so by age ${num("ageRet")||"?"} that ${money(c.monthly)}/mo becomes ${money(c.monthlyAtRet)}/mo, climbing further through retirement. The pot is sized to cover all of it — and shown as the <strong>future amount</strong> you'll actually need, ${money(c.nominalCorpus)}. The Retirement bucket below uses this future figure; every other bucket uses the plain amount you typed.</div>`;
+}
+
+/* ---------- render: results ---------- */
+function renderResults(r){
+  $("nwCash").textContent = money(r.cash);
+  $("nwInv").textContent  = money(r.inv);
+  $("nwLiab").textContent = money(r.liab);
+  $("nwNet").textContent  = money(r.net);
+
+  // headline
+  const sv = r.savings;
+  if(!sv){
+    $("monthlySave").textContent = "—";
+    $("monthlySaveSub").textContent = "Set your ages so retirement is in the future.";
+    $("monthlySaveNote").textContent = "";
+  } else if(r.totalShortfall<=0){
+    $("monthlySave").textContent = money(0);
+    $("monthlySaveSub").textContent = "Every bucket is already covered by what you have.";
+    $("monthlySaveNote").textContent = "What you hold already meets every target. Anything extra flows into Retirement — see below.";
+  } else {
+    const yrs = Math.round(r.monthsToRet/12);
+    $("monthlySave").textContent = money(sv.growthM);
+    $("monthlySaveSub").textContent = `every month until you retire in ${yrs} years — this funds every bucket.`;
+    $("monthlySaveNote").innerHTML = `This is a fixed amount you save monthly. It <strong>already assumes your invested savings compound at about ${(sv.growthRate*100).toFixed(0)}% a year</strong> — over ${yrs} years that growth does most of the work, which is why the figure is far lower than the total you're aiming for. <span class="worst">Worst case, if your savings never grew at all, you'd need ${money(sv.conservativeM)}/mo — that's the floor, not the plan.</span>`;
+  }
+
+  // vessels
+  const vl = $("vesselList"); vl.innerHTML = "";
+  r.order.forEach(b=>{
+    const a = r.alloc[b.id]||0;
+    const t = b.target||0;
+    const pct = t>0 ? (a/t*100) : (a>0?100:0);
+    const over = b.isRet && a > t + 1e-6 && t>0;
+    const fillH = Math.max(0, Math.min(100, pct));
+    let chip, chipCls;
+    if(a<=0){ chip="Empty"; chipCls="empty"; }
+    else if(over){ chip="Over-funded"; chipCls="over"; }
+    else if(pct>=99.95){ chip="Funded"; chipCls="funded"; }
+    else { chip=Math.round(pct)+"% there"; chipCls="building"; }
+
+    const src = r.source[b.id]||"none";
+    const srcTxt = {cash:"Held as cash", inv:"Invested — grows over time", none:"Not started"}[src];
+    const srcDot = {cash:"cash",inv:"inv",none:"none"}[src];
+
+    // time to fill at the recommended monthly saving
+    const tm = r.times ? r.times[b.id] : undefined;
+    let timeTxt = "";
+    if(r.shortfall && r.shortfall[b.id] <= 1e-6){ timeTxt = `<span class="v-time done">Funded now</span>`; }
+    else if(tm===undefined || tm===null){ timeTxt = ""; }
+    else if(!isFinite(tm)){ timeTxt = `<span class="v-time none">Give it a % to fund it</span>`; }
+    else { timeTxt = `<span class="v-time">Full in ${fmtTime(tm)}</span>`; }
+
+    // retirement: remind that the target shown is today's money
+    const retNote = b.isRet ? `<div class="v-retnote">Adjusted for inflation — this is what your pot must be <strong>on the day you turn ${num("ageRet")||"?"}</strong>. That's ${money(r.c.corpus)} in today's money.</div>` : "";
+
+    const row = document.createElement("div");
+    row.className = "vessel-row";
+    row.innerHTML = `
+      <div class="vessel ${a<=0?'empty':''} ${over?'over':''}"><div class="water" style="height:${a<=0?0:Math.max(fillH,over?100:6)}%"></div></div>
+      <div class="v-info">
+        <div class="v-name">${escapeHtml(b.name) || "Untitled bucket"} <span class="chip ${chipCls}">${chip}</span></div>
+        <div class="v-figs"><b>${money(a)}</b> of ${money(t)}${over?` <span style="color:var(--clay)">(+${money(a-t)} over)</span>`:``}</div>
+        <div class="v-src"><span class="dot ${srcDot}"></span>${srcTxt}${timeTxt?` &nbsp;·&nbsp; `+timeTxt:``}</div>
+        ${retNote}
+      </div>`;
+    vl.appendChild(row);
+  });
+}
+
+/* time formatter: months under a year, years above */
+function fmtTime(m){
+  if(!isFinite(m)) return "—";
+  if(m < 1) return "under a month";
+  if(m < 11.5) return Math.round(m) + (Math.round(m)===1?" month":" months");
+  const y = m/12;
+  if(y < 9.95) return y.toFixed(1).replace(/\.0$/,"") + (y<1.05?" year":" years");
+  return Math.round(y) + " years";
+}
+
+/* ---------- copy-paste verification prompt ---------- */
+function buildVerifyPrompt(r){
+  const c = r.c;
+  const f = x => sym() + Math.round(x).toLocaleString("en-US");
+  const pc = x => { const v = Math.round(x*100)/100; return (Number.isInteger(v)?v:v.toFixed(2)) + "%"; };
+  const yearsToRet = c.yearsToRet, N = c.N;
+  const retTxt = pc(num("ret")), inflTxt = pc(num("infl"));
+  const retRetTxt = pc(c.usedRet*100);
+  const fillFirst = r.order.filter(b=> b.mandatory && !b.isRet);
+  const invested  = r.order.filter(b=> !b.mandatory);
+  const lines = [];
+  fillFirst.forEach(b=> lines.push(`- ${b.name}: target ${f(b.target)} — FILL FIRST, held as cash (never invested, no growth)`));
+  invested.forEach(b=>{
+    if(b.isRet) lines.push(`- ${b.name}: target = the retirement pot you work out below (a future value at age ${num("ageRet")}); invested; receives ${pc(b.pct)} of monthly savings`);
+    else lines.push(`- ${b.name}: target ${f(b.target)} — invested; receives ${pc(b.pct)} of monthly savings`);
+  });
+  const pctList = invested.map(b=> `${b.name} ${pc(b.pct)}`).join(", ");
+  return `I'm double-checking a retirement-savings calculator. Please work this out from scratch, show your steps, and tell me where you land. All amounts are in ${curCode} (${sym()}).
+
+CURRENT AMOUNTS
+- Liquid cash: ${f(r.cash)}
+- Investments: ${f(r.inv)}
+- Liabilities: ${f(r.liab)}
+- Annual investment return before retirement: ${retTxt}
+- Expected inflation: ${inflTxt}
+
+PROFILE
+- Current age: ${num("ageNow")}
+- Retirement age: ${num("ageRet")}  (${yearsToRet} years from now)
+- Life expectancy: ${num("ageEnd")}  (retirement lasts ${N} years)
+
+RETIREMENT INCOME TARGET
+- Desired spending: ${f(c.monthly)} per month, in TODAY's money. Inflate it by ${inflTxt} per year over the ${yearsToRet} years to retirement to get the real monthly spend at age ${num("ageRet")}.
+- During retirement the pot earns ${retRetTxt} per year${c.overrideRet?"":" (same rate as before retirement)"}, and spending keeps rising with ${inflTxt} inflation every year for ${N} years.
+- Leave behind ${f(c.buffer)} at death — treat this as a FLAT amount in future money; do NOT adjust it for inflation.
+
+SAVINGS BUCKETS
+${lines.join("\n")}
+
+METHOD
+1) Retirement pot needed at age ${num("ageRet")}: the amount that funds ${N} years of inflation-rising spending given the pot earns ${retRetTxt}/yr, plus enough to leave ${f(c.buffer)} flat at death. One clean way: value the spending as a level real annuity using a real return of (1+${retRetTxt})/(1+${inflTxt})−1, express that pot at the retirement date, then add ${f(c.buffer)} discounted back ${N} years at ${retRetTxt}/yr.
+2) Net worth = assets − liabilities. Fill the FILL FIRST buckets first out of net worth (they stay as cash and never grow).
+3) Split the leftover net worth — and every future monthly saving — across the invested buckets by their percentages (${pctList}). These sum to 100%.
+4) When a bucket reaches its target, re-divide its share among the buckets still being filled, keeping their original proportions.
+5) Invested buckets compound at ${retTxt}/yr (compounded monthly). The fill-first cash buckets don't grow.
+6) Once an invested (non-fill-first) bucket is full, it keeps compounding and everything it earns above its target is swept into the retirement pot — but ONLY during the years before retirement. At age ${num("ageRet")} all of this stops: no more saving, no more contributions, no more sweeping of growth between buckets.
+7) Solve for the single constant monthly saving so that every bucket — including retirement — reaches its target exactly by age ${num("ageRet")}. The whole accumulation calc ends at age ${num("ageRet")}; nothing compounds past that point. From age ${num("ageRet")} onward the retirement pot alone does the job described under RETIREMENT INCOME TARGET (earning ${retRetTxt}/yr and being spent down over ${N} years), while the other buckets are simply yours to spend.
+
+Please give me: (a) the monthly spend at retirement, (b) the retirement pot needed at age ${num("ageRet")}, and (c) the required constant monthly saving.`;
+}
+
+/* ---------- main ---------- */
+function recompute(full=true){
+  reflowPriorities();
+  // refresh priority badges without full rerender when typing
+  if(full){ /* nothing */ }
+  document.querySelectorAll("[data-cur]").forEach(e=> e.textContent = sym());
+  const r = compute();
+  renderRetBreakdown(r);
+  updateRetTargetDisplay();
+  renderResults(r);
+  updateAllocSum();
+  const vp = $("verifyPrompt"); if(vp) vp.value = buildVerifyPrompt(r);
+}
+
+/* ---------- wiring ---------- */
+function loadFields(){
+  for(const k in F){ const el = $(k); if(el) el.value = F[k]; }
+  ["cash","inv","liab","monthly","buffer"].forEach(id=>{
+    const n = parseNum($(id).value); $(id).value = n ? n.toLocaleString("en-US") : "";
+  });
+}
+function attachField(id){
+  $(id).addEventListener("input", ()=> recompute(false));
+}
+["cash","inv","ret","infl","liab","ageNow","ageRet","ageEnd","monthly","retRet","buffer"].forEach(attachField);
+
+// comma-format money fields on blur
+["cash","inv","liab","monthly","buffer"].forEach(id=>{
+  $(id).addEventListener("blur", e=>{
+    const n = parseNum(e.target.value);
+    e.target.value = n ? n.toLocaleString("en-US") : "";
+    recompute(false);
+  });
+});
+
+$("ageNow").addEventListener("input", updateAgeNote);
+$("ageRet").addEventListener("input", updateAgeNote);
+$("ageEnd").addEventListener("input", updateAgeNote);
+function updateAgeNote(){
+  const now=num("ageNow"), ret=num("ageRet"), end=num("ageEnd");
+  let msg = "";
+  if(now && ret && ret>now) msg += `${ret-now} years of saving ahead. `;
+  else if(now && ret && ret<=now) msg += `Retirement age is not in the future. `;
+  if(ret && end && end>ret) msg += `${end-ret} years of retirement to fund.`;
+  $("ageNote").textContent = msg;
+}
+
+$("addBucket").addEventListener("click", ()=>{
+  reflowPriorities();
+  const maxP = Math.max(...buckets.filter(b=>!b.isRet).map(b=>b.priority), 2);
+  const ret = buckets.find(b=>b.isRet);
+  const newB = {id:++uid, name:"", target:0, note:"", core:false, mandatory:false, removable:true, isRet:false, priority:maxP+1, pct:0};
+  // insert before retirement
+  const idx = buckets.indexOf(ret);
+  buckets.splice(idx, 0, newB);
+  reflowPriorities();
+  renderBuckets(); renderAlloc(); recompute();
+});
+
+$("currency").addEventListener("change", e=>{ curCode = e.target.value; renderBuckets(); recompute(); });
+
+$("copyPromptBtn").addEventListener("click", ()=>{
+  const ta = $("verifyPrompt");
+  const done = ()=>{ const b=$("copyPromptBtn"); b.textContent="Copied ✓"; b.classList.add("done");
+    setTimeout(()=>{ b.textContent="Copy prompt"; b.classList.remove("done"); }, 1600); };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(ta.value).then(done).catch(()=>{ ta.select(); document.execCommand("copy"); done(); });
+  } else { ta.select(); document.execCommand("copy"); done(); }
+});
+
+$("resetBtn").addEventListener("click", ()=>{
+  defaults(); loadFields(); $("currency").value="SGD"; curCode="SGD";
+  renderBuckets(); renderAlloc(); updateAgeNote(); recompute();
+});
+
+/* ---------- init ---------- */
+defaults();
+loadFields();
+renderBuckets();
+renderAlloc();
+updateAgeNote();
+recompute();
+</script>
+</body>
+</html>
