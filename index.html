@@ -3,20 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bucket Plan — a savings & retirement planner</title>
+<title>Retirement Planner - Calculate the monthly savings you need for the retiree life you want</title>
+<meta name="description" content="Retirement planning made simple, and grounded in real numbers you can check yourself.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Retirement Planner - Calculate the monthly savings you need for the retiree life you want">
+<meta property="og:description" content="Retirement planning made simple, and grounded in real numbers you can check yourself.">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Retirement Planner - Calculate the monthly savings you need for the retiree life you want">
+<meta name="twitter:description" content="Retirement planning made simple, and grounded in real numbers you can check yourself.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;450;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --paper:#F1EFE7; --surface:#FBFAF6; --surface-2:#F6F4EC;
-    --ink:#15302B; --ink-2:#3B514A; --muted:#7E8C85;
-    --line:#DAD6CA; --line-soft:#E6E2D7;
-    --teal:#1C7A6A; --teal-deep:#13564A; --teal-light:#43A491; --teal-pale:#D9EAE4;
+    --paper:#F1EEF6; --surface:#FBFAFE; --surface-2:#F4F1FA;
+    --ink:#2A2340; --ink-2:#4C4463; --muted:#867E97;
+    --line:#DAD4E6; --line-soft:#E7E2F1;
+    --teal:#6C5BC0; --teal-deep:#4A3A8E; --teal-light:#B3A4E0; --teal-pale:#E9E3F6;
     --clay:#BE6A38; --clay-pale:#F1DECC;
     --gold:#B08A2E;
     --r:14px; --r-sm:9px;
-    --shadow:0 1px 2px rgba(21,48,43,.04), 0 8px 24px -16px rgba(21,48,43,.25);
+    --shadow:0 1px 2px rgba(42,35,64,.04), 0 8px 24px -16px rgba(42,35,64,.22);
   }
   *{box-sizing:border-box}
   html{-webkit-text-size-adjust:100%}
@@ -70,8 +77,8 @@
     background:var(--surface-2); color:var(--ink); transition:border-color .15s, background .15s;
   }
   .in-money input{padding-left:42px; font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums}
-  input:focus{outline:none; border-color:var(--teal); background:#fff; box-shadow:0 0 0 3px rgba(28,122,106,.12)}
-  input::placeholder{color:#B7BDB7}
+  input:focus{outline:none; border-color:var(--teal); background:#fff; box-shadow:0 0 0 3px rgba(108,91,192,.15)}
+  input::placeholder{color:#B0AAC0}
   .note-in{margin-top:8px}
   .note-in input{font-size:13px; padding:8px 12px; font-family:"Inter",sans-serif}
   .row2{display:grid; grid-template-columns:1fr 1fr; gap:14px}
@@ -141,12 +148,12 @@
   /* ---------- results pane ---------- */
   .results{position:sticky; top:18px; display:flex; flex-direction:column; gap:16px}
   @media(max-width:980px){ .results{position:static} }
-  .result-card{background:var(--ink); color:#EAF1EE; border-radius:var(--r); padding:24px 24px 26px; box-shadow:var(--shadow)}
+  .result-card{background:var(--ink); color:#ECE9F5; border-radius:var(--r); padding:24px 24px 26px; box-shadow:var(--shadow)}
   .result-card .rc-label{font-size:12px; letter-spacing:.13em; text-transform:uppercase; color:var(--teal-light); font-weight:600}
   .headline-num{font-family:"IBM Plex Mono",monospace; font-weight:600; font-size:clamp(30px,4vw,40px); letter-spacing:-.02em; margin:8px 0 2px; line-height:1}
-  .headline-sub{font-size:13px; color:#A9BDB6}
-  .headline-note{font-size:12.5px; color:#8FA59E; margin-top:14px; padding-top:14px; border-top:1px solid rgba(255,255,255,.1); line-height:1.45}
-  .headline-note strong{color:#CFE0DA}
+  .headline-sub{font-size:13px; color:#C2B8DE}
+  .headline-note{font-size:12.5px; color:#B0A6CC; margin-top:14px; padding-top:14px; border-top:1px solid rgba(255,255,255,.1); line-height:1.45}
+  .headline-note strong{color:#DBD3EE}
   .headline-note .worst{display:block; margin-top:8px; font-size:11.5px; color:#7C928B; font-style:italic}
   .nw-strip{display:flex; gap:0; background:var(--surface); border:1px solid var(--line); border-radius:var(--r); overflow:hidden}
   .nw-cell{flex:1; padding:13px 14px; border-left:1px solid var(--line-soft)}
@@ -192,9 +199,16 @@
   .page-footer a:hover{color:var(--teal)}
   .dot.cash{background:var(--teal-light)} .dot.inv{background:var(--teal-deep)} .dot.both{background:linear-gradient(90deg,var(--teal-light) 50%,var(--teal-deep) 50%)} .dot.none{background:var(--line)}
 
-  .footnote{font-size:12px; color:var(--muted); line-height:1.5; padding:2px 4px}
-  .footnote a{color:var(--teal-deep)}
-  .verify{max-width:1180px; margin:34px auto 0; padding:26px 30px; background:var(--surface); border:1px solid var(--line); border-radius:18px}
+  .footnote{font-size:12.5px; color:var(--muted); line-height:1.55; border-top:1px solid var(--line-soft); margin-top:6px; padding-top:6px}
+  .footnote summary{cursor:pointer; list-style:none; display:flex; align-items:center; gap:8px; font-weight:500; color:var(--ink-2); padding:5px 2px}
+  .footnote summary::-webkit-details-marker{display:none}
+  .footnote summary::before{content:""; width:6px; height:6px; border-right:1.5px solid var(--muted); border-bottom:1.5px solid var(--muted); transform:rotate(-45deg); transition:transform .18s; flex:none}
+  .footnote[open] summary::before{transform:rotate(45deg)}
+  .footnote-body{padding:4px 2px 6px; max-width:64ch}
+  .footnote em{font-style:normal; font-weight:600; color:var(--ink-2)}
+  .tail{max-width:1240px; margin:0 auto; padding:0 28px}
+  .verify{margin:40px auto 0; padding:26px 30px; background:var(--surface); border:1px solid var(--line); border-radius:18px}
+  @media(max-width:560px){ .verify{padding:22px 18px} }
   .verify-head{font-family:"Fraunces",Georgia,serif; font-size:22px; color:var(--ink); margin-bottom:8px}
   .verify-intro{font-size:14px; color:var(--muted); line-height:1.6; margin:0 0 16px; max-width:760px}
   .verify-box{position:relative}
@@ -206,14 +220,14 @@
     font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.6; color:var(--ink);
     background:var(--paper); border:1px solid var(--line); border-radius:12px; white-space:pre-wrap}
   .verify-text:focus{outline:2px solid var(--teal); outline-offset:1px}
-  .interlude{max-width:720px; margin:48px auto 0; padding:0 22px; text-align:center}
-  .interlude-inner{padding:40px 34px; background:linear-gradient(177deg, var(--teal-pale), var(--surface) 78%); border:1px solid var(--line-soft); border-radius:22px; box-shadow:var(--shadow)}
-  .interlude-mark{display:block; width:26px; height:26px; margin:0 auto 20px; border-radius:50%; border:1.5px solid var(--teal); position:relative}
-  .interlude-mark::after{content:""; position:absolute; inset:7px; border-radius:50%; background:var(--teal)}
-  .interlude-lead{font-family:"Fraunces",Georgia,serif; font-style:italic; font-weight:500; font-size:23px; line-height:1.32; color:var(--teal-deep); margin:0 0 18px}
-  .interlude-body{font-family:"Inter",system-ui,sans-serif; font-size:15px; line-height:1.72; color:var(--ink-2); margin:0 auto 12px; max-width:540px}
-  .interlude-close{font-family:"Fraunces",Georgia,serif; font-size:17px; color:var(--ink); margin:20px 0 0}
-  @media(max-width:560px){ .interlude-inner{padding:32px 22px} .interlude-lead{font-size:20px} }
+  .interlude{max-width:600px; margin:46px auto 0; text-align:center}
+  .interlude-inner{padding:38px 32px; background:linear-gradient(177deg, #E4EEF9, var(--surface) 80%); border:1px solid #D7E3F3; border-radius:22px; box-shadow:var(--shadow)}
+  .interlude-mark{display:block; width:26px; height:26px; margin:0 auto 18px; border-radius:50%; border:1.5px solid #5A88C4; position:relative}
+  .interlude-mark::after{content:""; position:absolute; inset:7px; border-radius:50%; background:#5A88C4}
+  .interlude-lead{font-family:"Fraunces",Georgia,serif; font-style:italic; font-weight:500; font-size:22px; line-height:1.32; color:#345E8C; margin:0 0 16px}
+  .interlude-body{font-family:"Inter",system-ui,sans-serif; font-size:15px; line-height:1.7; color:var(--ink-2); margin:0 auto 11px; max-width:500px}
+  .interlude-close{font-family:"Fraunces",Georgia,serif; font-size:17px; color:var(--ink); margin:18px 0 0}
+  @media(max-width:560px){ .interlude-inner{padding:30px 22px} .interlude-lead{font-size:20px} }
   .warn-inline{font-size:12.5px; color:var(--clay); margin-top:8px; display:none}
   .warn-inline.show{display:block}
 
@@ -233,20 +247,20 @@
 <header>
   <div class="eyebrow">Retirement calculator</div>
   <h1>How much should I save each month <em>to retire the way I want?</em></h1>
-  <p>This calculator was built for simplicity. Put in what you have today and the life you want in retirement, and it works out the one figure that matters: the amount to save each month until you retire. Map your goals into buckets — a safety net, a home, travel, retirement — and find your magic monthly number.</p>
+  <p>Put in what you have now and the life you want later, and this works out the one number that matters: how much to save each month until you retire. You sort your goals into simple buckets, like a safety net, a home, travel, and retirement, and it finds your monthly number.</p>
 </header>
 
 <div class="toolbar">
   <div class="cur-sel">
     <span>Currency</span>
     <select id="currency">
-      <option value="SGD">SGD — S$</option>
-      <option value="PHP">PHP — ₱</option>
-      <option value="USD">USD — $</option>
-      <option value="EUR">EUR — €</option>
-      <option value="GBP">GBP — £</option>
-      <option value="MYR">MYR — RM</option>
-      <option value="AUD">AUD — A$</option>
+      <option value="SGD">SGD (S$)</option>
+      <option value="PHP">PHP (₱)</option>
+      <option value="USD">USD ($)</option>
+      <option value="EUR">EUR (€)</option>
+      <option value="GBP">GBP (£)</option>
+      <option value="MYR">MYR (RM)</option>
+      <option value="AUD">AUD (A$)</option>
     </select>
   </div>
   <div class="sp"></div>
@@ -265,36 +279,36 @@
       <div class="panel-body">
         <div class="field">
           <div class="field-top"><label for="cash">Liquid cash</label></div>
-          <div class="hint">Money you could spend today — add up your everyday and savings account balances.</div>
+          <div class="hint">Money you could spend today. Add up your everyday and savings account balances.</div>
           <div class="in-money"><span class="cur" data-cur>S$</span><input type="text" id="cash" inputmode="decimal"></div>
         </div>
 
         <div class="field">
           <div class="field-top"><label for="inv">Investments</label></div>
-          <div class="hint">Today's market value of stocks, funds, bonds, crypto, any tax-advantaged or pension accounts you'd count toward these goals, and any property equity. Use current value, not what you paid.</div>
+          <div class="hint">Today's value of your stocks, funds, bonds, crypto, and any retirement or pension accounts and home equity you'd put toward these goals. Use what it is worth now, not what you paid.</div>
           <div class="in-money"><span class="cur" data-cur>S$</span><input type="text" id="inv" inputmode="decimal"></div>
         </div>
 
         <div class="field">
           <div class="field-top"><label for="ret">Estimated annual investment return</label></div>
-          <div class="hint">Your best guess at average yearly growth, after fees. A diversified stock-and-bond mix is often estimated near 5–7%. Be realistic, not hopeful — this also sizes your retirement target.</div>
+          <div class="hint">Your best guess at average yearly growth, after fees. A mix of stocks and bonds is often estimated around 5 to 7% a year. Pick a realistic number, since it also sets the size of your retirement goal.</div>
           <div class="suffixed" style="max-width:160px"><input type="number" id="ret" step="0.1" inputmode="decimal"><span class="sfx">% / yr</span></div>
         </div>
 
         <div class="field">
           <div class="field-top"><label for="infl">Expected inflation</label></div>
-          <div class="hint">How fast prices rise where you'll spend in retirement. A long-run figure of 2–4% a year is typical for many countries; use what fits yours. This is what your retirement money has to keep up with.</div>
+          <div class="hint">How fast prices rise where you will spend in retirement. Many countries average about 2 to 4% a year over the long run, so use what fits yours. Your retirement money has to keep up with this.</div>
           <div class="suffixed" style="max-width:160px"><input type="number" id="infl" step="0.1" inputmode="decimal"><span class="sfx">% / yr</span></div>
         </div>
 
         <div class="field">
           <div class="field-top"><label for="liab">Liabilities</label></div>
-          <div class="hint">Total debt you'd want cleared — card balances, personal or car loans, remaining mortgage. The balance you owe, not the monthly payment. Paid from cash first.</div>
+          <div class="hint">Total debt you would want cleared, like card balances, personal or car loans, and any remaining mortgage. Enter the balance you owe, not the monthly payment. This is paid from cash first.</div>
           <div class="in-money"><span class="cur" data-cur>S$</span><input type="text" id="liab" inputmode="decimal"></div>
         </div>
 
         <div class="field">
-          <div class="hint" style="margin-bottom:11px"><strong style="color:var(--ink)">Your timeline.</strong> Used to size your retirement pot and to spread your saving across the months you have left.</div>
+          <div class="hint" style="margin-bottom:11px"><strong style="color:var(--ink)">Your timeline.</strong> This sets the size of your retirement pot and spreads your saving across the months you have left.</div>
           <div class="row3">
             <div class="mini"><label for="ageNow">Age now</label><div class="suffixed"><input type="number" id="ageNow" placeholder="e.g. 51"></div></div>
             <div class="mini"><label for="ageRet">Retire at</label><div class="suffixed"><input type="number" id="ageRet"></div></div>
@@ -308,22 +322,22 @@
     <!-- STEP 3 (retirement details placed before buckets logically; numbered 2 for the engine) -->
     <section class="panel">
       <div class="panel-head"><span class="step">2</span>
-        <h2>Your retirement target<span class="sub">Tell it the life you want; it works out the pot you need. No 4% rule — a real spend-down.</span></h2>
+        <h2>Your retirement target<span class="sub">Tell it the life you want; it works out the pot you need. No 4% rule, just a plan that lasts your whole retirement.</span></h2>
       </div>
       <div class="panel-body">
         <div class="field">
           <div class="field-top"><label for="monthly">Desired monthly spending in retirement</label></div>
-          <div class="hint">In <strong>today's money</strong> — what that lifestyle would cost right now (home, food, utilities, healthcare, leisure). You don't inflate it; the tool handles rising prices through the real return.</div>
+          <div class="hint">In <strong>today's money</strong>: what that lifestyle would cost right now, covering home, food, bills, healthcare, and fun. You do not need to adjust it for inflation, the tool does that for you.</div>
           <div class="in-money"><span class="cur" data-cur>S$</span><input type="text" id="monthly" inputmode="decimal"></div>
         </div>
         <div class="field">
           <div class="field-top"><label for="retRet">Investment return <em style="font-style:normal;color:var(--muted)">during</em> retirement</label><span style="font-size:12px;color:var(--muted)">optional</span></div>
-          <div class="hint">Most people move to safer, lower-yielding investments once they retire. Put that lower rate here and the pot is sized for it. <strong>Leave blank</strong> to assume your return stays the same as before retirement.</div>
+          <div class="hint">Most people move to safer, lower earning investments once they retire. Put that lower rate here and the pot is sized for it. <strong>Leave blank</strong> to keep the same return as before retirement.</div>
           <div class="suffixed" style="max-width:200px"><input type="number" id="retRet" step="0.1" inputmode="decimal" placeholder="same as before"><span class="sfx">% / yr</span></div>
         </div>
         <div class="field">
           <div class="field-top"><label for="buffer">Amount to leave behind</label></div>
-          <div class="hint">The <strong>actual lump sum, in today's money</strong>, you want still sitting in the pot at the end — an inheritance or a cushion in case you outlive the plan. Leave at 0 to spend the pot all the way down to zero by your "plan until" age.</div>
+          <div class="hint">The <strong>actual amount, in today's money</strong>, you want still in the pot at the end, like an inheritance or a cushion in case you live longer than planned. Leave it at 0 to spend the pot all the way down to zero by your "plan until" age.</div>
           <div class="in-money"><span class="cur" data-cur>S$</span><input type="text" id="buffer" inputmode="decimal"></div>
         </div>
         <div class="calc-out" id="retBreakdown"></div>
@@ -333,10 +347,10 @@
     <!-- STEP 2 buckets -->
     <section class="panel">
       <div class="panel-head"><span class="step">3</span>
-        <h2>Your buckets<span class="sub">Emergency and Health always fill first. Mark any other bucket "Fill first" to top it up fully before the rest — handy for short-term goals. Rank and add as you like.</span></h2>
+        <h2>Your buckets<span class="sub">Emergency and Health always fill first. Mark any other bucket "Fill first" to fully top it up before the rest, which is handy for short term goals. Rank and add buckets as you like.</span></h2>
       </div>
       <div class="panel-body">
-        <div class="info-callout">Enter each target as the <strong>exact amount you want</strong>, in today's money. We take these at face value — <strong>except the Retirement fund</strong>, which we adjust for inflation and show as the (larger) amount you'll actually need on the day you retire. That one goal is decades of spending, so today's prices won't cut it.</div>
+        <div class="info-callout">Enter each target as the <strong>exact amount you want</strong>, in today's money. We use these amounts as they are, <strong>except the Retirement fund</strong>. That one we adjust for inflation and show as the larger amount you will actually need on the day you retire, because it has to cover decades of spending and today's prices will not be enough.</div>
         <div id="bucketList"></div>
         <button class="add-btn" id="addBucket">+ Add a bucket</button>
       </div>
@@ -359,16 +373,16 @@
   <div class="results">
     <div class="result-card">
       <div class="rc-label">Set aside each month until you retire</div>
-      <div class="headline-num" id="monthlySave">—</div>
+      <div class="headline-num" id="monthlySave">-</div>
       <div class="headline-sub" id="monthlySaveSub"></div>
       <div class="headline-note" id="monthlySaveNote"></div>
     </div>
 
     <div class="nw-strip">
-      <div class="nw-cell"><div class="k">Cash</div><div class="v num" id="nwCash">—</div></div>
-      <div class="nw-cell"><div class="k">Investments</div><div class="v num" id="nwInv">—</div></div>
-      <div class="nw-cell"><div class="k">− Debt</div><div class="v num" id="nwLiab">—</div></div>
-      <div class="nw-cell net"><div class="k">Net to deploy</div><div class="v num" id="nwNet">—</div></div>
+      <div class="nw-cell"><div class="k">Cash</div><div class="v num" id="nwCash">-</div></div>
+      <div class="nw-cell"><div class="k">Investments</div><div class="v num" id="nwInv">-</div></div>
+      <div class="nw-cell"><div class="k">− Debt</div><div class="v num" id="nwLiab">-</div></div>
+      <div class="nw-cell net"><div class="k">Money to put to work</div><div class="v num" id="nwNet">-</div></div>
     </div>
 
     <div class="buckets-out">
@@ -376,12 +390,16 @@
       <div id="vesselList"></div>
     </div>
 
-    <div class="footnote">
-      Emergency and Health are kept as cash and filled first; any bucket you mark "Fill first" joins them and, once full, simply sits there — cash doesn't grow. Every other bucket is invested. While it fills, it takes its share of your monthly saving; as a bucket reaches its target, that share is re-divided among the buckets still being filled, keeping their original proportions. Here's the key part: once an <em>invested</em> bucket (like Travel or House) is full, it keeps growing, and everything it earns above its target spills into your Retirement fund — so a filled House quietly helps pay for retirement instead of sitting idle. Every target is the plain amount you entered, except Retirement, which is shown as its inflation-adjusted future value.
-    </div>
+    <details class="footnote">
+      <summary>How your money gets shared out</summary>
+      <div class="footnote-body">
+        Emergency and Health are kept as cash and filled up first. Any bucket you mark "Fill first" works the same way, and once it is full it just sits there, since cash does not grow. Every other bucket is invested. While a bucket is still filling, it gets its slice of your monthly savings. When it reaches its goal, that slice is shared among the buckets that still need money, in the same proportions as before. The useful part: once an invested bucket like Travel or House is full, it keeps earning, and anything it earns above its goal is added to your Retirement fund. So a finished House fund quietly helps pay for retirement instead of sitting idle. Every goal is the plain amount you typed in, except Retirement, which is shown as the bigger number you will actually need by the time you retire, since prices rise over the years.
+      </div>
+    </details>
   </div>
 </div>
 
+<div class="tail">
 <section class="interlude" aria-label="A note before you go">
   <div class="interlude-inner">
     <span class="interlude-mark" aria-hidden="true"></span>
@@ -394,12 +412,13 @@
 
 <section class="verify">
   <div class="verify-head">Check this against another AI</div>
-  <p class="verify-intro">Don't take this tool's word for it. Copy the prompt below — it's filled in with your exact numbers and the full method — paste it into any other AI (ChatGPT, Gemini, another Claude), and compare its answer to what you see above. They should land within a rounding nudge of each other.</p>
+  <p class="verify-intro">Don't just take this tool's word for it. Copy the prompt below. It is filled in with your exact numbers and the full method. Paste it into any other AI, like ChatGPT, Gemini, or another Claude, and compare its answer to what you see here. They should land very close to each other.</p>
   <div class="verify-box">
     <button class="verify-copy" id="copyPromptBtn" type="button">Copy prompt</button>
     <textarea id="verifyPrompt" class="verify-text" readonly spellcheck="false"></textarea>
   </div>
 </section>
+</div>
 
 <footer class="page-footer">
   Ideated by <a href="https://github.com/mctasuncion88" target="_blank" rel="noopener">Christine</a> and developed by Claude.
@@ -429,12 +448,12 @@ const F = { cash:18000, inv:12000, ret:6, infl:3, liab:5000, ageNow:25, ageRet:6
 const $ = id => document.getElementById(id);
 const sym = () => CUR[curCode];
 function money(n){
-  if(!isFinite(n)) return "—";
+  if(!isFinite(n)) return "-";
   const r = Math.round(n);
   return sym() + r.toLocaleString("en-US");
 }
 function moneyK(n){ // compact for tight spots
-  if(!isFinite(n)) return "—";
+  if(!isFinite(n)) return "-";
   return sym() + Math.round(n).toLocaleString("en-US");
 }
 function parseNum(v){
@@ -464,7 +483,7 @@ function computeCorpus(){
   const inflFactor = Math.pow(1+infl, yearsToRet);
   const monthlyAtRet = monthly * inflFactor;                 // first-year-of-retirement spend, in future money
   const nominalSpend = spendPV * inflFactor;                 // spending pot at retirement (future value)
-  // legacy buffer is a FLAT amount at death — discount it back to the retirement date at the nominal retirement return
+  // legacy buffer is a FLAT amount at death; discount it back to the retirement date at the retirement return
   const nominalBuffer = buffer / Math.pow(1+usedRet, N);
   const nominalCorpus = nominalSpend + nominalBuffer;        // total pot needed at retirement (future value)
   const corpus = inflFactor>0 ? nominalCorpus / inflFactor : nominalCorpus;  // today's-money equivalent of the whole pot
@@ -634,7 +653,7 @@ function renderBuckets(){
       <div class="br-grid">
         <span class="lbl">Target amount</span>
         ${b.isRet
-          ? `<span class="br-target-display" data-rettarget>—</span>`
+          ? `<span class="br-target-display" data-rettarget>-</span>`
           : `<div class="in-money"><span class="cur" data-cur>${sym()}</span><input type="text" data-f="target" inputmode="decimal" value="${b.target?b.target.toLocaleString("en-US"):""}"></div>`}
       </div>`;
     // wire inputs
@@ -726,13 +745,13 @@ function renderRetBreakdown(r){
     <div class="calc-line hl"><span>Monthly spending at age ${num("ageRet")||"?"} <span class="calc-sub">(${c.yearsToRet} yrs × ${inflPct}% inflation)</span></span><span class="num">${money(c.monthlyAtRet)}</span></div>
 
     <div class="calc-head">The pot that funds it</div>
-    <div class="calc-line"><span>Years it must last (${num("ageRet")||"?"}–${num("ageEnd")||"?"})</span><span class="num">${c.N} yrs</span></div>
+    <div class="calc-line"><span>Years it must last (${num("ageRet")||"?"} to ${num("ageEnd")||"?"})</span><span class="num">${c.N} yrs</span></div>
     <div class="calc-line"><span>Return during retirement${c.overrideRet?"":" (same as before)"}</span><span class="num">${retRetPct}</span></div>
     <div class="calc-line"><span>Real return after ${inflPct}% inflation</span><span class="num">${realTxt}</span></div>
     ${c.buffer>0?`<div class="calc-line"><span>Plus ${money(c.buffer)} left untouched at death <span class="calc-sub">(flat amount, set aside at ${num("ageRet")||"?"})</span></span><span class="num">${money(c.nominalBuffer)}</span></div>`:``}
     <div class="calc-line total"><span>Pot needed at age ${num("ageRet")||"?"}</span><span class="num">${money(c.nominalCorpus)}</span></div>
     <div class="calc-line ref"><span>That's ${money(c.corpus)} in today's money</span><span class="num"></span></div>
-    <div class="calc-note">Your spending keeps rising with inflation, so by age ${num("ageRet")||"?"} that ${money(c.monthly)}/mo becomes ${money(c.monthlyAtRet)}/mo, climbing further through retirement. The pot is sized to cover all of it — and shown as the <strong>future amount</strong> you'll actually need, ${money(c.nominalCorpus)}. The Retirement bucket below uses this future figure; every other bucket uses the plain amount you typed.</div>`;
+    <div class="calc-note">Your spending keeps rising with inflation, so by age ${num("ageRet")||"?"} that ${money(c.monthly)}/mo becomes ${money(c.monthlyAtRet)}/mo, climbing further through retirement. The pot is sized to cover all of it, and it is shown as the <strong>future amount</strong> you will actually need, ${money(c.nominalCorpus)}. The Retirement bucket below uses this future amount. Every other bucket uses the plain amount you typed.</div>`;
 }
 
 /* ---------- render: results ---------- */
@@ -745,18 +764,18 @@ function renderResults(r){
   // headline
   const sv = r.savings;
   if(!sv){
-    $("monthlySave").textContent = "—";
+    $("monthlySave").textContent = "-";
     $("monthlySaveSub").textContent = "Set your ages so retirement is in the future.";
     $("monthlySaveNote").textContent = "";
   } else if(r.totalShortfall<=0){
     $("monthlySave").textContent = money(0);
     $("monthlySaveSub").textContent = "Every bucket is already covered by what you have.";
-    $("monthlySaveNote").textContent = "What you hold already meets every target. Anything extra flows into Retirement — see below.";
+    $("monthlySaveNote").textContent = "What you hold already meets every target. Anything extra flows into Retirement. See below.";
   } else {
     const yrs = Math.round(r.monthsToRet/12);
     $("monthlySave").textContent = money(sv.growthM);
-    $("monthlySaveSub").textContent = `every month until you retire in ${yrs} years — this funds every bucket.`;
-    $("monthlySaveNote").innerHTML = `This is a fixed amount you save monthly. It <strong>already assumes your invested savings compound at about ${(sv.growthRate*100).toFixed(0)}% a year</strong> — over ${yrs} years that growth does most of the work, which is why the figure is far lower than the total you're aiming for. <span class="worst">Worst case, if your savings never grew at all, you'd need ${money(sv.conservativeM)}/mo — that's the floor, not the plan.</span>`;
+    $("monthlySaveSub").textContent = `every month until you retire in ${yrs} years. This funds every bucket.`;
+    $("monthlySaveNote").innerHTML = `This is a fixed amount you save each month. It <strong>already assumes your invested savings grow at about ${(sv.growthRate*100).toFixed(0)}% a year</strong>. Over ${yrs} years that growth does most of the work, which is why the number is much lower than the total you are aiming for. <span class="worst">Worst case, if your savings never grew at all, you would need ${money(sv.conservativeM)}/mo. That is the floor, not the plan.</span>`;
   }
 
   // vessels
@@ -774,7 +793,7 @@ function renderResults(r){
     else { chip=Math.round(pct)+"% there"; chipCls="building"; }
 
     const src = r.source[b.id]||"none";
-    const srcTxt = {cash:"Held as cash", inv:"Invested — grows over time", none:"Not started"}[src];
+    const srcTxt = {cash:"Held as cash", inv:"Invested, grows over time", none:"Not started"}[src];
     const srcDot = {cash:"cash",inv:"inv",none:"none"}[src];
 
     // time to fill at the recommended monthly saving
@@ -786,7 +805,7 @@ function renderResults(r){
     else { timeTxt = `<span class="v-time">Full in ${fmtTime(tm)}</span>`; }
 
     // retirement: remind that the target shown is today's money
-    const retNote = b.isRet ? `<div class="v-retnote">Adjusted for inflation — this is what your pot must be <strong>on the day you turn ${num("ageRet")||"?"}</strong>. That's ${money(r.c.corpus)} in today's money.</div>` : "";
+    const retNote = b.isRet ? `<div class="v-retnote">Adjusted for inflation. This is what your pot must be <strong>on the day you turn ${num("ageRet")||"?"}</strong>. That is ${money(r.c.corpus)} in today's money.</div>` : "";
 
     const row = document.createElement("div");
     row.className = "vessel-row";
@@ -804,7 +823,7 @@ function renderResults(r){
 
 /* time formatter: months under a year, years above */
 function fmtTime(m){
-  if(!isFinite(m)) return "—";
+  if(!isFinite(m)) return "-";
   if(m < 1) return "under a month";
   if(m < 11.5) return Math.round(m) + (Math.round(m)===1?" month":" months");
   const y = m/12;
@@ -823,10 +842,10 @@ function buildVerifyPrompt(r){
   const fillFirst = r.order.filter(b=> b.mandatory && !b.isRet);
   const invested  = r.order.filter(b=> !b.mandatory);
   const lines = [];
-  fillFirst.forEach(b=> lines.push(`- ${b.name}: target ${f(b.target)} — FILL FIRST, held as cash (never invested, no growth)`));
+  fillFirst.forEach(b=> lines.push(`- ${b.name}: target ${f(b.target)}. FILL FIRST, held as cash (never invested, no growth).`));
   invested.forEach(b=>{
     if(b.isRet) lines.push(`- ${b.name}: target = the retirement pot you work out below (a future value at age ${num("ageRet")}); invested; receives ${pc(b.pct)} of monthly savings`);
-    else lines.push(`- ${b.name}: target ${f(b.target)} — invested; receives ${pc(b.pct)} of monthly savings`);
+    else lines.push(`- ${b.name}: target ${f(b.target)}. Invested, receives ${pc(b.pct)} of monthly savings.`);
   });
   const pctList = invested.map(b=> `${b.name} ${pc(b.pct)}`).join(", ");
   return `I'm double-checking a retirement-savings calculator. Please work this out from scratch, show your steps, and tell me where you land. All amounts are in ${curCode} (${sym()}).
@@ -846,7 +865,7 @@ PROFILE
 RETIREMENT INCOME TARGET
 - Desired spending: ${f(c.monthly)} per month, in TODAY's money. Inflate it by ${inflTxt} per year over the ${yearsToRet} years to retirement to get the real monthly spend at age ${num("ageRet")}.
 - During retirement the pot earns ${retRetTxt} per year${c.overrideRet?"":" (same rate as before retirement)"}, and spending keeps rising with ${inflTxt} inflation every year for ${N} years.
-- Leave behind ${f(c.buffer)} at death — treat this as a FLAT amount in future money; do NOT adjust it for inflation.
+- Leave behind ${f(c.buffer)} at death. Treat this as a FLAT amount in future money; do NOT adjust it for inflation.
 
 SAVINGS BUCKETS
 ${lines.join("\n")}
@@ -854,11 +873,11 @@ ${lines.join("\n")}
 METHOD
 1) Retirement pot needed at age ${num("ageRet")}: the amount that funds ${N} years of inflation-rising spending given the pot earns ${retRetTxt}/yr, plus enough to leave ${f(c.buffer)} flat at death. One clean way: value the spending as a level real annuity using a real return of (1+${retRetTxt})/(1+${inflTxt})−1, express that pot at the retirement date, then add ${f(c.buffer)} discounted back ${N} years at ${retRetTxt}/yr.
 2) Net worth = assets − liabilities. Fill the FILL FIRST buckets first out of net worth (they stay as cash and never grow).
-3) Split the leftover net worth — and every future monthly saving — across the invested buckets by their percentages (${pctList}). These sum to 100%.
+3) Split the leftover net worth, and every future monthly saving, across the invested buckets by their percentages (${pctList}). These sum to 100%.
 4) When a bucket reaches its target, re-divide its share among the buckets still being filled, keeping their original proportions.
 5) Invested buckets compound at ${retTxt}/yr (compounded monthly). The fill-first cash buckets don't grow.
-6) Once an invested (non-fill-first) bucket is full, it keeps compounding and everything it earns above its target is swept into the retirement pot — but ONLY during the years before retirement. At age ${num("ageRet")} all of this stops: no more saving, no more contributions, no more sweeping of growth between buckets.
-7) Solve for the single constant monthly saving so that every bucket — including retirement — reaches its target exactly by age ${num("ageRet")}. The whole accumulation calc ends at age ${num("ageRet")}; nothing compounds past that point. From age ${num("ageRet")} onward the retirement pot alone does the job described under RETIREMENT INCOME TARGET (earning ${retRetTxt}/yr and being spent down over ${N} years), while the other buckets are simply yours to spend.
+6) Once an invested (non-fill-first) bucket is full, it keeps compounding and everything it earns above its target is swept into the retirement pot, but ONLY during the years before retirement. At age ${num("ageRet")} all of this stops: no more saving, no more contributions, no more sweeping of growth between buckets.
+7) Solve for the single constant monthly saving so that every bucket, including retirement, reaches its target exactly by age ${num("ageRet")}. The whole accumulation calc ends at age ${num("ageRet")}; nothing compounds past that point. From age ${num("ageRet")} onward the retirement pot alone does the job described under RETIREMENT INCOME TARGET (earning ${retRetTxt}/yr and being spent down over ${N} years), while the other buckets are simply yours to spend.
 
 Please give me: (a) the monthly spend at retirement, (b) the retirement pot needed at age ${num("ageRet")}, and (c) the required constant monthly saving.`;
 }
